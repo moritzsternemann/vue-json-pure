@@ -1,0 +1,48 @@
+{
+  "name": "vue-json-pure",
+  "version": "1.0.0",
+  "description": "",
+  "main": "dist/json-pure.js",
+  "scripts": {
+    "build": "yarn build:es && yarn build:main && yarn minify",
+    "build:es": "rollup -c build/rollup.esm.config.js",
+    "build:main": "rollup -c build/rollup.config.js",
+    "minify": "uglifyjs dist/json-pure.js -o dist/json-pure.min.js -c -m",
+    "lint": "eslint src"
+  },
+  "keywords": [
+    "VueJS",
+    "vue",
+    "vuex",
+    "api",
+    "json",
+    "JsonPure",
+    "websocket"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/moritzsternemann/vue-json-pure"
+  },
+  "authort": "Moritz Sternemann <moritz@strnmn.me>",
+  "license": "MIT",
+  "devDependencies": {
+    "eslint": "^4.5.0",
+    "eslint-config-standard": "^10.2.1",
+    "eslint-plugin-import": "^2.7.0",
+    "eslint-plugin-node": "^5.1.1",
+    "eslint-plugin-promise": "^3.5.0",
+    "eslint-plugin-standard": "^3.0.1",
+    "rollup": "^0.48.2",
+    "rollup-plugin-buble": "^0.15.0",
+    "rollup-plugin-commonjs": "^8.2.0",
+    "rollup-plugin-node-resolve": "^3.0.0",
+    "rollup-plugin-replace": "^1.1.1",
+    "uglify-js": "^3.0.28",
+    "vue": "^2.4.2",
+    "vue-native-websocket": "^2.0.3"
+  },
+  "peerDependencies": {
+    "vue": "^2.4.2"
+  },
+  "dependencies": {}
+}
