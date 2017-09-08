@@ -38,11 +38,12 @@
     "rollup-plugin-node-resolve": "^3.0.0",
     "rollup-plugin-replace": "^1.1.1",
     "uglify-js": "^3.0.28",
-    "vue": "^2.4.2",
-    "vue-native-websocket": "^2.0.3"
+    "vue": "^2.4.2"
   },
   "peerDependencies": {
     "vue": "^2.4.2"
   },
-  "dependencies": {}
+  "dependencies": {
+    "vue-native-websocket": "^2.0.3"
+  }
 }
