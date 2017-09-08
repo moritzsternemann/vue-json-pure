@@ -1,22 +1,35 @@
-import VueNativeWebsocket from './vue-native-websocket'
+import VueNativeWebsocket from 'vue-native-websocket'
 import Emitter from './emitter'
 import API from './api'
+import { warn } from './utils'
 
-let url
-let options
+let _Vue
+let _options
 let _api
 
-const install = (Vue) => {
-  if (!url || !options) { throw new Error('[json-pure] you have to call setup() before Vue.use()') }
+let _created
 
-  VueNativeWebsocket.setup(url, options)
-  VueNativeWebsocket.install(Vue, url, options)
+const install = (Vue, options) => {
+  if (_Vue) {
+    warn('already installed, Vue.use(VueJsonPure) should only be called once.')
+    return
+  }
+  _Vue = Vue
+
+  if (!options || !options.url) {
+    throw new Error('[json-pure] please provide all necessary configuration data')
+  }
+  _options = options
+
+  VueNativeWebsocket.install(Vue, options.url, options)
 
   Vue.prototype.$api = new API(Vue.prototype.$socket)
   _api = Vue.prototype.$api
 
   Vue.mixin({
     created () {
+      if (_created) { return }
+
       this.$options.sockets.onmessage = this.websocketOnMessage
 
       let api = this.$options['api']
@@ -38,6 +51,8 @@ const install = (Vue) => {
           this.$options.api[key] = api[key]
         })
       }
+
+      _created = true
     },
     beforeDestroy () {
       let api = this.$options['api']
@@ -48,40 +63,32 @@ const install = (Vue) => {
       }
     },
     methods: {
-      websocketOnMessage (event, next) {
+      websocketOnMessage (event) {
         let data = JSON.parse(event.data)
         if (options.autoPong === true && data.action_str === 'PING') {
           this.$socket.sendObj({ action_str: 'PONG' })
           return // don't call next() if responded to pong
         }
 
-        handleJsonPure(event, data, next)
+        handleJsonPure(event, data)
       }
     }
   })
 }
 
-const setup = (_url, _options = {}) => {
-  if (!_url) { throw new Error('[json-pure] the url cannot be empty') }
-
-  url = _url
-  options = _options
-}
-
-const handleJsonPure = (event, data, next) => {
+const handleJsonPure = (event, data) => {
   let action = data.action_str.split('_')
   if (action.length === 2 && action[1] === 'FAIL') {
     Emitter.emit('fail', { action_str: action[0] })
-    if (options.store) {
+    if (_options.store) {
       passToStore('API_FAIL', Object.assign(data, { action_str: action[0] }))
     }
   } else {
     Emitter.emit(action[0], data)
-    if (options.store) {
+    if (_options.store) {
       passToStore('API_' + action[0], data)
     }
   }
-  next()
 }
 
 const passToStore = (eventName, event) => {
@@ -89,15 +96,14 @@ const passToStore = (eventName, event) => {
   let method = 'commit'
   let target = eventName.toUpperCase()
   let msg = event
-  if (options.format === 'json' && event && typeof event === 'string') {
+  if (_options.format === 'json' && event && typeof event === 'string') {
     msg = JSON.parse(event)
   }
-  options.store[method](target, msg)
+  _options.store[method](target, msg)
 }
 
 export default {
   install,
-  setup,
   get api () {
     return _api
   },
