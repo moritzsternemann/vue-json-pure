@@ -1,4 +1,4 @@
-export default class {
+export default class API {
   constructor (socket) {
     this.socket = socket
   }
