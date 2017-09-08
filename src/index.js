@@ -4,6 +4,7 @@ import API from './api'
 
 let url
 let options
+let _api
 
 const install = (Vue) => {
   if (!url || !options) { throw new Error('[json-pure] you have to call setup() before Vue.use()') }
@@ -12,6 +13,7 @@ const install = (Vue) => {
   VueNativeWebsocket.install(Vue, url, options)
 
   Vue.prototype.$api = new API(Vue.prototype.$socket)
+  _api = Vue.prototype.$api
 
   Vue.mixin({
     created () {
@@ -54,8 +56,6 @@ const install = (Vue) => {
         }
 
         handleJsonPure(event, data, next)
-
-        next()
       }
     }
   })
@@ -73,7 +73,7 @@ const handleJsonPure = (event, data, next) => {
   if (action.length === 2 && action[1] === 'FAIL') {
     Emitter.emit('fail', { action_str: action[0] })
     if (options.store) {
-      passToStore('API_FAIL', { action_str: action[0] })
+      passToStore('API_FAIL', Object.assign(data, { action_str: action[0] }))
     }
   } else {
     Emitter.emit(action[0], data)
@@ -89,7 +89,7 @@ const passToStore = (eventName, event) => {
   let method = 'commit'
   let target = eventName.toUpperCase()
   let msg = event
-  if (options.format === 'json' && event) {
+  if (options.format === 'json' && event && typeof event === 'string') {
     msg = JSON.parse(event)
   }
   options.store[method](target, msg)
@@ -98,6 +98,9 @@ const passToStore = (eventName, event) => {
 export default {
   install,
   setup,
+  get api () {
+    return _api
+  },
 
   version: '__VERSION__'
 }
