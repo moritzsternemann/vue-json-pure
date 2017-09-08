@@ -29,6 +29,7 @@ const install = (_Vue) => {
           return true
         },
         deleteProperty (target, key) {
+          if (!this.$options) { return true }
           Emitter.removeListener(key, this.$options.sockets[key], this)
           delete target.key
           return true
